@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const bcrypt   = require('bcryptjs');
+const mongoose = require('mongoose')
+const bcrypt   = require('bcryptjs')
 
 const providerSchema = new mongoose.Schema(
   {
@@ -9,7 +9,8 @@ const providerSchema = new mongoose.Schema(
     phone:           { type: String,  required: true, trim: true },
     serviceCategory: { type: String,  required: true, enum: ['Electrician','Plumber','Carpenter','Painter','Cleaner','AC Technician','Mechanic','Mason','Gardener','Security Guard','Other'] },
     experience:      { type: Number,  required: true, min: 0 },
-    hourlyRate:      { type: Number,  required: true, min: 0 },
+    rateMin:         { type: Number,  required: true, min: 0 },
+    rateMax:         { type: Number,  required: true, min: 0 },
     bio:             { type: String,  maxlength: 500 },
     avatar:          { type: String,  default: '' },
     address:         { street: String, city: { type: String, required: true }, state: { type: String, required: true }, pincode: String },
@@ -22,16 +23,16 @@ const providerSchema = new mongoose.Schema(
     isActive:        { type: Boolean, default: true },
   },
   { timestamps: true }
-);
+)
 
 providerSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
-});
+  if (!this.isModified('password')) return next()
+  this.password = await bcrypt.hash(this.password, 10)
+  next()
+})
 
 providerSchema.methods.matchPassword = async function (entered) {
-  return bcrypt.compare(entered, this.password);
-};
+  return bcrypt.compare(entered, this.password)
+}
 
-module.exports = mongoose.model('Provider', providerSchema);
+module.exports = mongoose.model('Provider', providerSchema)

@@ -8,13 +8,15 @@ import { Button }      from '../../components/ui/button'
 import { Input }       from '../../components/ui/input'
 import { Label }       from '../../components/ui/label'
 import { Card, CardContent } from '../../components/ui/card'
-import { Separator }   from '../../components/ui/separator'
 import { staggerContainer, fadeUp, slideInLeft, slideInRight } from '../../lib/motionVariants'
 
 const categories = ['Electrician','Plumber','Carpenter','Painter','Cleaner','AC Technician','Mechanic','Mason','Gardener','Security Guard','Other']
 
 export default function ProviderRegister() {
-  const [form, setForm] = useState({ name:'', email:'', password:'', phone:'', serviceCategory:'', experience:'', hourlyRate:'', bio:'', city:'', state:'', skills:'' })
+  const [form, setForm] = useState({
+    name:'', email:'', password:'', phone:'', serviceCategory:'',
+    experience:'', rateMin:'', rateMax:'', bio:'', city:'', state:'', skills:''
+  })
   const [showPass, setShowPass] = useState(false)
   const [loading,  setLoading]  = useState(false)
   const { registerProvider } = useAuth()
@@ -25,6 +27,7 @@ export default function ProviderRegister() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (form.password.length < 6) return toast.error('Password must be at least 6 characters')
+    if (Number(form.rateMin) >= Number(form.rateMax)) return toast.error('Max rate must be greater than min rate')
     setLoading(true)
     try {
       await registerProvider({ ...form, address:{ city:form.city, state:form.state } })
@@ -54,7 +57,7 @@ export default function ProviderRegister() {
           <h2 className="font-display text-3xl font-bold mb-3">Start Earning Today</h2>
           <p className="text-orange-100 text-sm leading-relaxed mb-6">Register and connect with thousands of customers in your area.</p>
           <div className="space-y-2.5 text-left text-sm">
-            {['Set your own hourly rate','Work on your schedule','Get paid securely','Build 5-star reputation'].map((item,i) => (
+            {['Set your own rate range','Work on your schedule','Get paid securely','Build 5-star reputation'].map((item,i) => (
               <motion.div key={i} initial={{ opacity:0, x:-15 }} animate={{ opacity:1, x:0 }} transition={{ delay:0.5+i*0.1 }}
                 className="bg-white/10 rounded-xl px-3.5 py-3 flex items-center gap-2.5 border border-white/10 font-medium">
                 <span className="w-1.5 h-1.5 bg-yellow-300 rounded-full flex-shrink-0" />{item}
@@ -66,7 +69,7 @@ export default function ProviderRegister() {
 
       {/* Right */}
       <motion.div variants={slideInRight} initial="hidden" animate="visible"
-        className="w-full lg:w-3/5 flex items-center justify-center p-6 bg-gray-50 dark:bg-gray-950 overflow-y-auto">
+        className="w-full lg:w-3/5 flex items-center justify-center p-4 sm:p-6 bg-gray-50 dark:bg-gray-950 overflow-y-auto">
         <div className="w-full max-w-lg py-8">
           <motion.div variants={staggerContainer} initial="hidden" animate="visible">
             <motion.div variants={fadeUp} className="text-center mb-6">
@@ -76,16 +79,16 @@ export default function ProviderRegister() {
                 </motion.div>
                 <span className="font-display font-bold text-lg text-gray-900 dark:text-white">Service<span className="text-accent-500">Mate</span></span>
               </Link>
-              <h1 className="font-display text-3xl font-bold text-gray-900 dark:text-white">Provider Registration</h1>
+              <h1 className="font-display text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white">Provider Registration</h1>
               <p className="text-gray-500 dark:text-gray-400 mt-1 text-sm">Join our network of trusted professionals</p>
             </motion.div>
 
             <motion.div variants={fadeUp} custom={1}>
               <Card className="border-0 shadow-xl">
-                <CardContent className="p-7">
+                <CardContent className="p-5 sm:p-7">
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <SectionLabel>Personal Info</SectionLabel>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label>Full Name</Label>
                         <div className="relative"><User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
@@ -109,7 +112,7 @@ export default function ProviderRegister() {
                           value={form.password} onChange={handleChange} className="pl-9 pr-9 text-sm" required />
                         <button type="button" onClick={() => setShowPass(!showPass)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                          {showPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                          {showPass ? <Eye className="w-3.5 h-3.5 rotate-180" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
@@ -123,17 +126,31 @@ export default function ProviderRegister() {
                         {categories.map(c => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1.5">
-                        <Label>Experience (yrs)</Label>
-                        <Input name="experience" type="number" min="0" placeholder="5" value={form.experience} onChange={handleChange} className="text-sm" required />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label>Hourly Rate (₹)</Label>
-                        <div className="relative"><IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
-                          <Input name="hourlyRate" type="number" min="0" placeholder="350" value={form.hourlyRate} onChange={handleChange} className="pl-9 text-sm" required /></div>
-                      </div>
+                    <div className="space-y-1.5">
+                      <Label>Experience (years)</Label>
+                      <Input name="experience" type="number" min="0" placeholder="e.g. 5" value={form.experience} onChange={handleChange} className="text-sm" required />
                     </div>
+
+                    {/* Rate Range */}
+                    <div className="space-y-1.5">
+                      <Label>Hourly Rate Range (₹)</Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="relative">
+                          <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
+                          <Input name="rateMin" type="number" min="0" placeholder="Min e.g. 200"
+                            value={form.rateMin} onChange={handleChange} className="pl-9 text-sm" required />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">min</span>
+                        </div>
+                        <div className="relative">
+                          <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
+                          <Input name="rateMax" type="number" min="0" placeholder="Max e.g. 500"
+                            value={form.rateMax} onChange={handleChange} className="pl-9 text-sm" required />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">max</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-400 dark:text-gray-500">Set a price range so customers know what to expect</p>
+                    </div>
+
                     <div className="space-y-1.5">
                       <Label>Short Bio</Label>
                       <div className="relative"><FileText className="absolute left-3 top-3 text-gray-400 w-3.5 h-3.5" />
@@ -143,11 +160,11 @@ export default function ProviderRegister() {
                     <div className="space-y-1.5">
                       <Label>Skills (comma separated)</Label>
                       <div className="relative"><Tag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
-                        <Input name="skills" placeholder="Wiring, Switchboard, Solar" value={form.skills} onChange={handleChange} className="pl-9 text-sm" /></div>
+                        <Input name="skills" placeholder="e.g. Wiring, Switchboard, Solar" value={form.skills} onChange={handleChange} className="pl-9 text-sm" /></div>
                     </div>
 
                     <SectionLabel>Location</SectionLabel>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
                         <Label>City</Label>
                         <div className="relative"><MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />

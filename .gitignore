@@ -1,0 +1,30 @@
+# Root level gitignore
+
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Environment variables
+.env
+**/.env
+.env.local
+.env.production
+
+# Build output
+dist/
+**/dist/
+
+# Uploaded files (user uploads should not be in git)
+backend/uploads/
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

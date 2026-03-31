@@ -1,6 +1,6 @@
 # 🛠️ ServiceMate — Trusted Home Services Platform
 
-A full-stack MERN web application that connects customers with trusted service professionals like electricians, plumbers, carpenters, painters, and more.
+A full-stack MERN web application that connects customers with trusted service professionals like electricians, plumbers, carpenters, painters, and more — with QR code payments, service receipts, profile photos, and dark/light mode.
 
 ![ServiceMate](https://img.shields.io/badge/MERN-Stack-blue?style=for-the-badge)
 ![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react)
@@ -15,22 +15,29 @@ A full-stack MERN web application that connects customers with trusted service p
 ### For Customers (Users)
 - 🔍 Browse and search verified service professionals
 - 📅 Book appointments with preferred date and time
-- 📋 Track booking status in real-time
+- 📋 Track booking status in real-time (pending → accepted → in-progress → completed)
+- 💳 Pay via **QR code (UPI)** when provider accepts booking
+- 🧾 Download/print **service receipt** after work is completed
+- 📸 Upload and update **profile photo**
+- 🔑 **OTP-based forgot password** via email
 - ❌ Cancel pending bookings
 - ⭐ View provider profiles, ratings and reviews
 
 ### For Service Providers
 - 📥 Receive and manage booking requests
 - ✅ Accept or reject bookings
-- 🔄 Update booking status (Accept → Start → Complete)
-- 💰 Auto-calculate earnings based on hours worked
-- 📊 Dashboard with earnings and booking stats
+- 🔄 Update booking status (Accept → Start Work → Complete)
+- 💰 Set **hourly rate range** (min–max) instead of fixed price
+- 🧾 Generate **service receipt** for completed jobs
+- 📸 Upload and update **profile photo**
+- 📊 Dashboard with earnings (paid bookings only)
 
 ### General
-- 🔐 Dual authentication system (User & Provider)
+- 🌙 **Dark / Light mode** toggle with smooth animation
+- 📱 **Fully mobile responsive** (Android & iOS optimised)
+- 🔐 Dual JWT authentication (User & Provider)
 - 🎨 Beautiful UI with Framer Motion animations
-- 📱 Fully responsive design
-- 🔒 JWT-based secure authentication
+- 🔒 Bcrypt password hashing, secure OTP system
 
 ---
 
@@ -39,25 +46,27 @@ A full-stack MERN web application that connects customers with trusted service p
 ### Frontend
 | Technology | Purpose |
 |---|---|
-| React 18 + Vite | Frontend framework |
-| Tailwind CSS | Styling |
-| Framer Motion | Animations |
-| Lucide React | Icons |
-| Shadcn/ui (Radix UI) | UI Components |
-| React Router DOM | Routing |
-| Axios | API calls |
-| React Toastify | Notifications |
-| Lottie React | Animated illustrations |
+| React 18 + Vite | Frontend framework & build tool |
+| Tailwind CSS | Styling with dark mode support |
+| Framer Motion | Animations & transitions |
+| Lucide React | Icon library |
+| Shadcn/ui (Radix UI) | Accessible UI components |
+| qrcode.react | QR code generation for payments |
+| react-to-print | Receipt printing |
+| React Router DOM v6 | Client-side routing |
+| Axios | HTTP requests with interceptors |
+| React Toastify | Toast notifications |
 
 ### Backend
 | Technology | Purpose |
 |---|---|
-| Node.js + Express | Server |
-| MongoDB + Mongoose | Database |
-| JWT | Authentication |
-| Bcryptjs | Password hashing |
-| CORS | Cross-origin requests |
-| Dotenv | Environment variables |
+| Node.js + Express | REST API server |
+| MongoDB + Mongoose | Database & ODM |
+| JWT | Authentication tokens |
+| Bcryptjs | Password & OTP hashing |
+| Nodemailer | OTP email sending via Gmail |
+| Multer | Profile photo uploads |
+| CORS | Cross-origin request handling |
 
 ---
 
@@ -67,46 +76,81 @@ A full-stack MERN web application that connects customers with trusted service p
 servicemate-final/
 │
 ├── backend/
-│   ├── config/
-│   │   └── db.js                     # MongoDB connection
+│   ├── config/db.js
 │   ├── controllers/
-│   │   ├── userAuthController.js     # User register/login
-│   │   ├── providerAuthController.js # Provider register/login
-│   │   ├── providerController.js     # Browse providers
-│   │   └── bookingController.js      # Booking management
+│   │   ├── userAuthController.js
+│   │   ├── providerAuthController.js
+│   │   ├── providerController.js
+│   │   ├── bookingController.js
+│   │   ├── forgotPasswordController.js
+│   │   └── uploadController.js
 │   ├── middleware/
-│   │   ├── auth.js                   # JWT protection
-│   │   └── error.js                  # Error handling
+│   │   ├── auth.js
+│   │   ├── error.js
+│   │   └── upload.js
 │   ├── models/
-│   │   ├── User.js                   # User schema
-│   │   ├── Provider.js               # Provider schema
-│   │   ├── Booking.js                # Booking schema
-│   │   └── Review.js                 # Review schema
+│   │   ├── User.js
+│   │   ├── Provider.js      ← rateMin & rateMax fields
+│   │   ├── Booking.js       ← qrCode & receiptGenerated fields
+│   │   ├── Review.js
+│   │   └── OTP.js           ← auto-expires in 10 minutes
 │   ├── routes/
 │   │   ├── userAuthRoutes.js
 │   │   ├── providerAuthRoutes.js
 │   │   ├── providerRoutes.js
-│   │   └── bookingRoutes.js
-│   ├── .env                          # Environment variables
+│   │   ├── bookingRoutes.js
+│   │   ├── forgotPasswordRoutes.js
+│   │   └── uploadRoutes.js
+│   ├── uploads/avatars/     ← profile photos (git-ignored)
+│   ├── utils/
+│   │   ├── sendEmail.js
+│   │   ├── otpTemplate.js
+│   │   └── testEmail.js
+│   ├── .env                 ← git-ignored, create manually
+│   ├── .gitignore
 │   ├── package.json
-│   └── server.js                     # Entry point
+│   └── server.js
 │
 └── frontend/
     ├── src/
     │   ├── components/
-    │   │   ├── common/               # Navbar, Footer, Cards
-    │   │   └── ui/                   # Shadcn components
+    │   │   ├── common/
+    │   │   │   ├── Navbar.jsx
+    │   │   │   ├── Footer.jsx
+    │   │   │   ├── ProviderCard.jsx
+    │   │   │   ├── StatusBadge.jsx
+    │   │   │   ├── ThemeToggle.jsx
+    │   │   │   ├── AvatarUpload.jsx    ← profile photo upload
+    │   │   │   ├── QRPaymentModal.jsx  ← UPI QR code payment
+    │   │   │   └── Receipt.jsx         ← printable receipt
+    │   │   └── ui/
+    │   │       ├── button.jsx
+    │   │       ├── card.jsx
+    │   │       ├── badge.jsx
+    │   │       ├── input.jsx
+    │   │       ├── label.jsx
+    │   │       ├── separator.jsx
+    │   │       └── tabs.jsx
     │   ├── context/
-    │   │   └── AuthContext.jsx       # Global auth state
+    │   │   ├── AuthContext.jsx
+    │   │   └── ThemeContext.jsx
     │   ├── lib/
-    │   │   ├── utils.js              # Helper functions
-    │   │   └── motionVariants.js     # Framer motion variants
+    │   │   ├── utils.js
+    │   │   └── motionVariants.js
     │   ├── pages/
     │   │   ├── HomePage.jsx
     │   │   ├── ProvidersPage.jsx
     │   │   ├── ProviderDetailPage.jsx
-    │   │   ├── user/                 # User pages
-    │   │   └── provider/             # Provider pages
+    │   │   ├── auth/ForgotPassword.jsx
+    │   │   ├── user/
+    │   │   │   ├── UserLogin.jsx
+    │   │   │   ├── UserRegister.jsx
+    │   │   │   ├── UserDashboard.jsx
+    │   │   │   └── BookingPage.jsx
+    │   │   └── provider/
+    │   │       ├── ProviderLogin.jsx
+    │   │       ├── ProviderRegister.jsx
+    │   │       └── ProviderDashboard.jsx
     │   ├── App.jsx
     │   ├── main.jsx
     │   └── index.css
@@ -114,6 +158,7 @@ servicemate-final/
     ├── vite.config.js
     ├── tailwind.config.js
     ├── postcss.config.js
+    ├── .gitignore
     └── package.json
 ```
 
@@ -121,210 +166,161 @@ servicemate-final/
 
 ## 🗄️ MongoDB Collections
 
-| Collection | Description |
-|---|---|
-| `users` | Customer accounts |
-| `providers` | Service professional accounts |
-| `bookings` | Service appointments |
-| `reviews` | Ratings and comments |
+| Collection | Description | Key New Fields |
+|---|---|---|
+| `users` | Customer accounts | avatar (profile photo URL) |
+| `providers` | Service professionals | `rateMin`, `rateMax` (rate range), avatar |
+| `bookings` | Service appointments | `qrCode` (UPI string), `receiptGenerated`, `paymentStatus` |
+| `reviews` | Ratings & comments | — |
+| `otps` | OTP codes for password reset | Auto-expires after 10 minutes |
+
+### ⚠️ MongoDB Changes Required
+If you have an **existing database** from a previous version, you need to:
+1. The `providers` collection now uses `rateMin` and `rateMax` instead of `hourlyRate`
+2. Re-register providers to populate these new fields
+3. The `bookings` collection has two new fields `qrCode` and `receiptGenerated` — existing bookings will just have empty values which is fine
 
 ---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-Make sure you have these installed on your machine:
-- [Node.js](https://nodejs.org/) (v18 or higher)
-- [MongoDB Compass](https://www.mongodb.com/products/compass) or [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
-- [Git](https://git-scm.com/)
-
----
+- [Node.js](https://nodejs.org/) v18 or higher
+- [MongoDB Compass](https://www.mongodb.com/products/compass) or MongoDB Atlas
+- Gmail account with App Password (for OTP emails)
 
 ### 1. Clone the Repository
-
 ```bash
-git clone https://github.com/your-username/servicemate-final.git
-cd servicemate-final
+git clone https://github.com/your-username/servicemate.git
+cd servicemate
 ```
 
----
-
 ### 2. Backend Setup
-
 ```bash
 cd backend
 npm install
 ```
 
-Create a `.env` file inside the `backend/` folder:
-
+Create `backend/.env`:
 ```env
 PORT=5000
 MONGO_URI=mongodb://localhost:27017/servicemate
-JWT_SECRET=your_super_secret_jwt_key_here
+JWT_SECRET=your_super_secret_key_here
 JWT_EXPIRE=7d
 NODE_ENV=development
+
+EMAIL_USER=your_gmail@gmail.com
+EMAIL_PASS=your_16_char_app_password
+EMAIL_FROM=ServiceMate <your_gmail@gmail.com>
+
+FRONTEND_URL=http://localhost:5173
+UPI_ID=your_upi_id@upi
 ```
 
-> **If using MongoDB Compass (local):**
-> ```
-> MONGO_URI=mongodb://localhost:27017/servicemate
-> ```
+Test your Gmail config:
+```bash
+node utils/testEmail.js
+```
 
-> **If using MongoDB Atlas (cloud):**
-> ```
-> MONGO_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/servicemate
-> ```
-
-Start the backend server:
-
+Start the backend:
 ```bash
 npm run dev
 ```
 
-You should see:
-```
-✅ MongoDB Connected: localhost
-🚀 Server running on http://localhost:5000
-```
-
----
-
 ### 3. Frontend Setup
-
-Open a **new terminal** and run:
-
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-You should see:
-```
-VITE ready in ~500ms
-➜ Local: http://localhost:5173
-```
-
----
-
-### 4. Open in Browser
-
+### 4. Open Browser
 ```
 http://localhost:5173
 ```
 
 ---
 
-## 🔑 Environment Variables
+## ⚙️ Gmail App Password Setup (for OTP)
 
-| Variable | Description | Example |
-|---|---|---|
-| `PORT` | Backend server port | `5000` |
-| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017/servicemate` |
-| `JWT_SECRET` | Secret key for JWT tokens | `your_secret_key` |
-| `JWT_EXPIRE` | JWT token expiry time | `7d` |
-| `NODE_ENV` | Environment mode | `development` |
+1. Go to [myaccount.google.com/security](https://myaccount.google.com/security)
+2. Turn ON **2-Step Verification**
+3. Go to [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
+4. Select App: **Mail** → Device: **Other** → Name it `ServiceMate`
+5. Copy the 16-character password (no spaces) → paste into `EMAIL_PASS`
 
 ---
 
 ## 📡 API Endpoints
 
-### User Auth
+### Auth
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/auth/user/register` | Register new user |
+| POST | `/api/auth/user/register` | Register user |
 | POST | `/api/auth/user/login` | Login user |
-| GET | `/api/auth/user/me` | Get user profile |
-| PUT | `/api/auth/user/me` | Update user profile |
-
-### Provider Auth
-| Method | Endpoint | Description |
-|---|---|---|
-| POST | `/api/auth/provider/register` | Register new provider |
+| POST | `/api/auth/provider/register` | Register provider |
 | POST | `/api/auth/provider/login` | Login provider |
-| GET | `/api/auth/provider/me` | Get provider profile |
-| PUT | `/api/auth/provider/me` | Update provider profile |
+| POST | `/api/auth/forgot-password/send-otp` | Send OTP email |
+| POST | `/api/auth/forgot-password/verify-otp` | Verify OTP |
+| POST | `/api/auth/forgot-password/reset-password` | Reset password |
 
 ### Providers
 | Method | Endpoint | Description |
 |---|---|---|
-| GET | `/api/providers` | Get all providers (with filters) |
-| GET | `/api/providers/:id` | Get single provider |
+| GET | `/api/providers` | List providers (with filters) |
+| GET | `/api/providers/:id` | Get provider profile |
 
 ### Bookings
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/bookings` | Create booking (user) |
-| GET | `/api/bookings/my` | Get user bookings |
-| GET | `/api/bookings/provider` | Get provider bookings |
-| PUT | `/api/bookings/:id/status` | Update booking status (provider) |
+| POST | `/api/bookings` | Create booking |
+| GET | `/api/bookings/my` | User's bookings |
+| GET | `/api/bookings/provider` | Provider's bookings |
+| PUT | `/api/bookings/:id/status` | Update status (provider) |
 | PUT | `/api/bookings/:id/cancel` | Cancel booking (user) |
-| POST | `/api/bookings/:id/review` | Add review (user) |
+| PUT | `/api/bookings/:id/payment` | Confirm payment (user) |
+| POST | `/api/bookings/:id/review` | Add review |
 
----
-
-## 🎨 Pages Overview
-
-| Page | Route | Description |
+### Upload
+| Method | Endpoint | Description |
 |---|---|---|
-| Home | `/` | Hero section, services, testimonials |
-| Find Services | `/providers` | Browse and filter providers |
-| Provider Detail | `/providers/:id` | Full provider profile |
-| User Login | `/user/login` | Customer login |
-| User Register | `/user/register` | Customer registration |
-| User Dashboard | `/user/dashboard` | Manage bookings |
-| Book Service | `/user/book/:id` | Book a provider |
-| Provider Login | `/provider/login` | Provider login |
-| Provider Register | `/provider/register` | Provider registration |
-| Provider Dashboard | `/provider/dashboard` | Manage requests & earnings |
+| POST | `/api/upload/avatar` | Upload profile photo |
 
 ---
 
-## 🤝 Contributing
+## 🚀 Deployment
 
-1. Fork the repository
-2. Create your feature branch
-```bash
-git checkout -b feature/your-feature-name
-```
-3. Commit your changes
-```bash
-git commit -m "Add your feature"
-```
-4. Push to the branch
-```bash
-git push origin feature/your-feature-name
-```
-5. Open a Pull Request
+### Backend → Render
+1. Push to GitHub
+2. Go to [render.com](https://render.com) → New Web Service
+3. Root directory: `backend`, Start command: `node server.js`
+4. Add all environment variables from `.env`
+
+### Frontend → Vercel
+1. Go to [vercel.com](https://vercel.com) → New Project
+2. Root directory: `frontend`, Framework: Vite
+3. Add environment variable: `VITE_API_URL=https://your-render-url.onrender.com`
 
 ---
 
 ## ⚠️ Common Issues
 
-**MongoDB not connecting?**
-- Make sure MongoDB Compass is open and running
-- Check that the `MONGO_URI` in `.env` is correct
-- For Atlas, whitelist your IP in Network Access
-
-**Frontend not connecting to backend?**
-- Make sure backend is running on port `5000`
-- Check `vite.config.js` has the proxy set to `http://localhost:5000`
-
-**npm install fails?**
-- Make sure you are running Node.js v18 or higher
-- Try deleting `node_modules` and running `npm install` again
+| Issue | Fix |
+|---|---|
+| OTP email not sending | Use Gmail App Password, not regular password |
+| MongoDB not connecting | Make sure MongoDB Compass is open and running |
+| Avatar not loading | Make sure backend `uploads/` folder exists |
+| QR code not showing | Provider must accept the booking first |
+| Dark mode text invisible | Clear localStorage and refresh |
 
 ---
 
 ## 📄 License
 
-This project is open source and available under the [MIT License](LICENSE).
-
----
+MIT License — free to use and modify.
 
 ## 👨‍💻 Author
 
-Built with ❤️ for reliable home services across India.
+Built by **Mohammed** — Information Science Engineering Student, MCEM Mysore (2026)
 
 > ⭐ If you found this project helpful, please give it a star on GitHub!

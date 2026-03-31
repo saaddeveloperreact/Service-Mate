@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose')
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -14,9 +14,11 @@ const bookingSchema = new mongoose.Schema(
     hoursWorked:     { type: Number, default: 0 },
     review:          { rating: { type: Number, min:1, max:5 }, comment: { type: String, maxlength: 300 }, createdAt: Date },
     paymentStatus:   { type: String, enum: ['unpaid','paid'], default: 'unpaid' },
+    qrCode:          { type: String, default: '' },
+    receiptGenerated:{ type: Boolean, default: false },
     notes:           { type: String, maxlength: 300 },
   },
   { timestamps: true }
-);
+)
 
-module.exports = mongoose.model('Booking', bookingSchema);
+module.exports = mongoose.model('Booking', bookingSchema)
