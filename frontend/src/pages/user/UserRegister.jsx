@@ -1,40 +1,47 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useAuth } from '../../context/AuthContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { registerUser, selectLoading, selectError, clearError } from '../../store/slices/authSlice'
 import { toast } from 'react-toastify'
 import { User, Mail, Lock, Phone, Eye, EyeOff, ArrowRight, Wrench, CheckCircle } from 'lucide-react'
-import { Button }      from '../../components/ui/button'
-import { Input }       from '../../components/ui/input'
-import { Label }       from '../../components/ui/label'
+import { Button }          from '../../components/ui/button'
+import { Input }           from '../../components/ui/input'
+import { Label }           from '../../components/ui/label'
 import { Card, CardContent } from '../../components/ui/card'
 import { staggerContainer, fadeUp, slideInLeft, slideInRight } from '../../lib/motionVariants'
 
 export default function UserRegister() {
+  const dispatch  = useDispatch()
+  const navigate  = useNavigate()
+  const loading   = useSelector(selectLoading)
+  const error     = useSelector(selectError)
+
   const [form,     setForm]     = useState({ name:'', email:'', password:'', phone:'', city:'', state:'' })
   const [showPass, setShowPass] = useState(false)
-  const [loading,  setLoading]  = useState(false)
-  const { registerUser } = useAuth()
-  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (error) { toast.error(error); dispatch(clearError()) }
+  }, [error])
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (form.password.length < 6) return toast.error('Password must be at least 6 characters')
-    setLoading(true)
-    try {
-      await registerUser({ name:form.name, email:form.email, password:form.password, phone:form.phone, address:{ city:form.city, state:form.state } })
+    const result = await dispatch(registerUser({
+      name: form.name, email: form.email, password: form.password,
+      phone: form.phone, address: { city: form.city, state: form.state }
+    }))
+    if (registerUser.fulfilled.match(result)) {
       toast.success('Account created!')
       navigate('/user/dashboard')
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed')
-    } finally { setLoading(false) }
+    }
   }
 
   return (
     <div className="min-h-screen flex pt-16">
-      {/* Left */}
+      {/* Left panel */}
       <motion.div variants={slideInLeft} initial="hidden" animate="visible"
         className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12"
         style={{ background:'linear-gradient(135deg,#1e3a8a 0%,#1d4ed8 50%,#2563eb 100%)' }}>
@@ -55,7 +62,7 @@ export default function UserRegister() {
         </div>
       </motion.div>
 
-      {/* Right */}
+      {/* Right panel */}
       <motion.div variants={slideInRight} initial="hidden" animate="visible"
         className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-gray-50 dark:bg-gray-950 overflow-y-auto">
         <div className="w-full max-w-md py-8">
@@ -110,7 +117,7 @@ export default function UserRegister() {
                       <Label>Password</Label>
                       <div className="relative">
                         <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input name="password" type={showPass?'text':'password'} placeholder="Min 6 characters"
+                        <Input name="password" type={showPass ? 'text' : 'password'} placeholder="Min 6 characters"
                           value={form.password} onChange={handleChange} className="pl-10 pr-10" required />
                         <button type="button" onClick={() => setShowPass(!showPass)}
                           className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">

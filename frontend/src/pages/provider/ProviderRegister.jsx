@@ -1,26 +1,33 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useAuth } from '../../context/AuthContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { registerProvider, selectLoading, selectError, clearError } from '../../store/slices/authSlice'
 import { toast } from 'react-toastify'
 import { User, Mail, Lock, Phone, Eye, EyeOff, ArrowRight, Wrench, IndianRupee, MapPin, Tag, FileText } from 'lucide-react'
-import { Button }      from '../../components/ui/button'
-import { Input }       from '../../components/ui/input'
-import { Label }       from '../../components/ui/label'
+import { Button }          from '../../components/ui/button'
+import { Input }           from '../../components/ui/input'
+import { Label }           from '../../components/ui/label'
 import { Card, CardContent } from '../../components/ui/card'
 import { staggerContainer, fadeUp, slideInLeft, slideInRight } from '../../lib/motionVariants'
 
 const categories = ['Electrician','Plumber','Carpenter','Painter','Cleaner','AC Technician','Mechanic','Mason','Gardener','Security Guard','Other']
 
 export default function ProviderRegister() {
+  const dispatch  = useDispatch()
+  const navigate  = useNavigate()
+  const loading   = useSelector(selectLoading)
+  const error     = useSelector(selectError)
+
   const [form, setForm] = useState({
     name:'', email:'', password:'', phone:'', serviceCategory:'',
     experience:'', rateMin:'', rateMax:'', bio:'', city:'', state:'', skills:''
   })
   const [showPass, setShowPass] = useState(false)
-  const [loading,  setLoading]  = useState(false)
-  const { registerProvider } = useAuth()
-  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (error) { toast.error(error); dispatch(clearError()) }
+  }, [error])
 
   const handleChange = e => setForm({ ...form, [e.target.name]: e.target.value })
 
@@ -28,14 +35,13 @@ export default function ProviderRegister() {
     e.preventDefault()
     if (form.password.length < 6) return toast.error('Password must be at least 6 characters')
     if (Number(form.rateMin) >= Number(form.rateMax)) return toast.error('Max rate must be greater than min rate')
-    setLoading(true)
-    try {
-      await registerProvider({ ...form, address:{ city:form.city, state:form.state } })
+    const result = await dispatch(registerProvider({
+      ...form, address: { city: form.city, state: form.state }
+    }))
+    if (registerProvider.fulfilled.match(result)) {
       toast.success('Welcome aboard, Provider!')
       navigate('/provider/dashboard')
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Registration failed')
-    } finally { setLoading(false) }
+    }
   }
 
   const SectionLabel = ({ children }) => (
@@ -46,7 +52,7 @@ export default function ProviderRegister() {
 
   return (
     <div className="min-h-screen flex pt-16">
-      {/* Left */}
+      {/* Left panel */}
       <motion.div variants={slideInLeft} initial="hidden" animate="visible"
         className="hidden lg:flex lg:w-2/5 relative overflow-hidden items-center justify-center p-10"
         style={{ background:'linear-gradient(135deg,#c2410c 0%,#ea580c 60%,#f97316 100%)' }}>
@@ -67,7 +73,7 @@ export default function ProviderRegister() {
         </div>
       </motion.div>
 
-      {/* Right */}
+      {/* Right panel */}
       <motion.div variants={slideInRight} initial="hidden" animate="visible"
         className="w-full lg:w-3/5 flex items-center justify-center p-4 sm:p-6 bg-gray-50 dark:bg-gray-950 overflow-y-auto">
         <div className="w-full max-w-lg py-8">
@@ -87,6 +93,7 @@ export default function ProviderRegister() {
               <Card className="border-0 shadow-xl">
                 <CardContent className="p-5 sm:p-7">
                   <form onSubmit={handleSubmit} className="space-y-4">
+
                     <SectionLabel>Personal Info</SectionLabel>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div className="space-y-1.5">
@@ -108,11 +115,11 @@ export default function ProviderRegister() {
                     <div className="space-y-1.5">
                       <Label>Password</Label>
                       <div className="relative"><Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
-                        <Input name="password" type={showPass?'text':'password'} placeholder="Min 6 characters"
+                        <Input name="password" type={showPass ? 'text' : 'password'} placeholder="Min 6 characters"
                           value={form.password} onChange={handleChange} className="pl-9 pr-9 text-sm" required />
                         <button type="button" onClick={() => setShowPass(!showPass)}
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
-                          {showPass ? <Eye className="w-3.5 h-3.5 rotate-180" /> : <Eye className="w-3.5 h-3.5" />}
+                          {showPass ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </div>
@@ -130,27 +137,20 @@ export default function ProviderRegister() {
                       <Label>Experience (years)</Label>
                       <Input name="experience" type="number" min="0" placeholder="e.g. 5" value={form.experience} onChange={handleChange} className="text-sm" required />
                     </div>
-
-                    {/* Rate Range */}
                     <div className="space-y-1.5">
                       <Label>Hourly Rate Range (₹)</Label>
                       <div className="grid grid-cols-2 gap-3">
                         <div className="relative">
                           <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
-                          <Input name="rateMin" type="number" min="0" placeholder="Min e.g. 200"
-                            value={form.rateMin} onChange={handleChange} className="pl-9 text-sm" required />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">min</span>
+                          <Input name="rateMin" type="number" min="0" placeholder="Min e.g. 200" value={form.rateMin} onChange={handleChange} className="pl-9 text-sm" required />
                         </div>
                         <div className="relative">
                           <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-3.5 h-3.5" />
-                          <Input name="rateMax" type="number" min="0" placeholder="Max e.g. 500"
-                            value={form.rateMax} onChange={handleChange} className="pl-9 text-sm" required />
-                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400">max</span>
+                          <Input name="rateMax" type="number" min="0" placeholder="Max e.g. 500" value={form.rateMax} onChange={handleChange} className="pl-9 text-sm" required />
                         </div>
                       </div>
                       <p className="text-xs text-gray-400 dark:text-gray-500">Set a price range so customers know what to expect</p>
                     </div>
-
                     <div className="space-y-1.5">
                       <Label>Short Bio</Label>
                       <div className="relative"><FileText className="absolute left-3 top-3 text-gray-400 w-3.5 h-3.5" />

@@ -1,37 +1,41 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useAuth } from '../../context/AuthContext'
+import { useDispatch, useSelector } from 'react-redux'
+import { loginProvider, selectLoading, selectError, clearError } from '../../store/slices/authSlice'
 import { toast } from 'react-toastify'
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Wrench, Briefcase, TrendingUp, Calendar, Star } from 'lucide-react'
-import { Button }      from '../../components/ui/button'
-import { Input }       from '../../components/ui/input'
-import { Label }       from '../../components/ui/label'
+import { Button }          from '../../components/ui/button'
+import { Input }           from '../../components/ui/input'
+import { Label }           from '../../components/ui/label'
 import { Card, CardContent } from '../../components/ui/card'
 import { staggerContainer, fadeUp, slideInLeft, slideInRight } from '../../lib/motionVariants'
 
 export default function ProviderLogin() {
+  const dispatch  = useDispatch()
+  const navigate  = useNavigate()
+  const loading   = useSelector(selectLoading)
+  const error     = useSelector(selectError)
+
   const [form,     setForm]     = useState({ email:'', password:'' })
   const [showPass, setShowPass] = useState(false)
-  const [loading,  setLoading]  = useState(false)
-  const { loginProvider } = useAuth()
-  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (error) { toast.error(error); dispatch(clearError()) }
+  }, [error])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
-    try {
-      await loginProvider(form.email, form.password)
+    const result = await dispatch(loginProvider({ email: form.email, password: form.password }))
+    if (loginProvider.fulfilled.match(result)) {
       toast.success('Welcome back, Provider!')
       navigate('/provider/dashboard')
-    } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed')
-    } finally { setLoading(false) }
+    }
   }
 
   return (
     <div className="min-h-screen flex pt-16">
-      {/* Left */}
+      {/* Left panel */}
       <motion.div variants={slideInLeft} initial="hidden" animate="visible"
         className="hidden lg:flex lg:w-1/2 relative overflow-hidden items-center justify-center p-12"
         style={{ background:'linear-gradient(135deg,#c2410c 0%,#ea580c 50%,#f97316 100%)' }}>
@@ -52,7 +56,7 @@ export default function ProviderLogin() {
         </div>
       </motion.div>
 
-      {/* Right */}
+      {/* Right panel */}
       <motion.div variants={slideInRight} initial="hidden" animate="visible"
         className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-gray-50 dark:bg-gray-950">
         <div className="w-full max-w-md">
@@ -84,7 +88,7 @@ export default function ProviderLogin() {
                       <Label>Password</Label>
                       <div className="relative">
                         <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
-                        <Input type={showPass?'text':'password'} placeholder="••••••••" value={form.password}
+                        <Input type={showPass ? 'text' : 'password'} placeholder="••••••••" value={form.password}
                           onChange={e => setForm({ ...form, password: e.target.value })} className="pl-10 pr-10" required />
                         <button type="button" onClick={() => setShowPass(!showPass)}
                           className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">

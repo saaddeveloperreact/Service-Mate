@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import axios from 'axios'
-import { useAuth } from '../context/AuthContext'
+import { useSelector } from 'react-redux'
+import { selectUser, selectRole } from '../store/slices/authSlice'
 import { Star, MapPin, Clock, BadgeCheck, ArrowLeft, IndianRupee, Briefcase, Phone, ChevronRight } from 'lucide-react'
 import { Card, CardContent } from '../components/ui/card'
 import { Button }    from '../components/ui/button'
@@ -25,7 +26,8 @@ const catEmoji = { Electrician:'⚡', Plumber:'🔧', Carpenter:'🪚', Painter:
 
 export default function ProviderDetailPage() {
   const { id }    = useParams()
-  const { user, role } = useAuth()
+  const user = useSelector(selectUser)
+  const role = useSelector(selectRole)
   const navigate  = useNavigate()
   const [provider, setProvider] = useState(null)
   const [loading,  setLoading]  = useState(true)

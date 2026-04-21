@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useAuth } from '../../context/AuthContext'
+import API from '../../store/services/api'
+import { useSelector } from 'react-redux'
+import { selectUser } from '../../store/slices/authSlice'
 import { toast } from 'react-toastify'
 import { Calendar, Clock, MapPin, FileText, ArrowLeft, Send, Star, BadgeCheck, IndianRupee } from 'lucide-react'
 import { Button }      from '../../components/ui/button'
@@ -13,7 +15,7 @@ import { staggerContainer, fadeUp } from '../../lib/motionVariants'
 
 export default function BookingPage() {
   const { providerId } = useParams()
-  const { API, user }  = useAuth()
+  const user = useSelector(selectUser)
   const navigate       = useNavigate()
   const [provider, setProvider] = useState(null)
   const [loading,  setLoading]  = useState(false)
