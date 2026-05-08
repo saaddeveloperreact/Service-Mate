@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:wght@300;400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -51,14 +51,30 @@
     --ring: 217 91% 60%;
   }
 
-  * { @apply border-border; box-sizing: border-box; margin: 0; padding: 0; }
-  html { transition: background-color 0.3s ease, color 0.3s ease; }
-  body { @apply bg-background text-foreground; font-family: 'DM Sans', sans-serif; }
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  html {
+    transition:
+      background-color 0.3s ease,
+      color 0.3s ease;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: "DM Sans", sans-serif;
+  }
 }
 
 @layer components {
-  .section-title { @apply font-display text-3xl md:text-4xl font-bold text-gray-900 dark:text-white; }
-  .gradient-text { @apply bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent; }
+  .section-title {
+    @apply font-display text-3xl md:text-4xl font-bold text-gray-900 dark:text-white;
+  }
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary-600 to-accent-500 bg-clip-text text-transparent;
+  }
 
   /* Dark mode aware card */
   .dm-card {
@@ -82,32 +98,25 @@
   border-radius: 1rem;
 }
 .dark .skeleton {
-  background: linear-gradient(90deg, #1e293b 25%, #273548 50%, #1e293b 75%);
+  background: linear-gradient(90deg, #1e293b 25%, #344358 50%, #1e293b 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
 /* Custom scrollbar */
-::-webkit-scrollbar        { width: 5px; }
-::-webkit-scrollbar-track  { background: #f1f5f9; }
-::-webkit-scrollbar-thumb  { background: #94a3b8; border-radius: 3px; }
-.dark ::-webkit-scrollbar-track { background: #1e293b; }
-.dark ::-webkit-scrollbar-thumb { background: #475569; }
-
-/* ── Mobile responsive utilities ──────────────────────── */
-@media (max-width: 640px) {
-  .section-title { font-size: 1.75rem; }
-  .font-display  { letter-spacing: -0.02em; }
+::-webkit-scrollbar {
+  width: 5px;
 }
-
-/* Prevent horizontal overflow on mobile */
-html, body { overflow-x: hidden; max-width: 100vw; }
-
-/* Touch-friendly tap targets */
-button, a, [role="button"] { min-height: 44px; }
-
-/* Better text rendering on mobile */
-body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
-
-/* Line clamp utility */
-.line-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}

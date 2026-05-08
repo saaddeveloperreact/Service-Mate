@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     port: 5173,
-    host: true, // expose to network so you can test on phone
+    host: true,
     proxy: {
       '/api': {
         target: 'http://localhost:5000',
@@ -22,10 +22,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom'],
-          router: ['react-router-dom'],
-          motion: ['framer-motion'],
-          ui:     ['lucide-react', 'qrcode.react'],
+          vendor:  ['react', 'react-dom'],
+          router:  ['react-router-dom'],
+          redux:   ['@reduxjs/toolkit', 'react-redux'],
+          motion:  ['framer-motion'],
+          charts:  ['recharts'],
+          ui:      ['lucide-react', 'qrcode.react'],
         },
       },
     },

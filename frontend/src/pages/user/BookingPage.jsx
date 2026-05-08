@@ -5,7 +5,7 @@ import API from '../../store/services/api'
 import { useSelector } from 'react-redux'
 import { selectUser } from '../../store/slices/authSlice'
 import { toast } from 'react-toastify'
-import { Calendar, Clock, MapPin, FileText, ArrowLeft, Send, Star, BadgeCheck, IndianRupee } from 'lucide-react'
+import { Calendar, Clock, MapPin, FileText, ArrowLeft, Send, Star, BadgeCheck, IndianRupee, Lock, AlertTriangle } from 'lucide-react'
 import { Button }      from '../../components/ui/button'
 import { Input }       from '../../components/ui/input'
 import { Label }       from '../../components/ui/label'
@@ -26,7 +26,16 @@ export default function BookingPage() {
 
   useEffect(() => {
     API.get(`/providers/${providerId}`)
-      .then(({ data }) => setProvider(data.provider))
+      .then(({ data }) => {
+        const p = data.provider
+        // Block if no active subscription
+        if (p.subscription?.status !== 'active') {
+          toast.error('This provider does not have an active subscription and cannot be booked.')
+          navigate(-1)
+          return
+        }
+        setProvider(p)
+      })
       .catch(() => { toast.error('Provider not found'); navigate(-1) })
   }, [providerId])
 
